@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <title>App Launcher</title>
+  <style>
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+    body {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      min-height: 100vh;
+      background-color: #0f172a;
+      color: #f8fafc;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      padding: 24px;
+      text-align: center;
+    }
+    .card {
+      background: #1e293b;
+      padding: 32px 24px;
+      border-radius: 16px;
+      max-width: 400px;
+      width: 100%;
+      box-shadow: 0 10px 25px rgba(0, 0, 0, 0.3);
+    }
+    h1 {
+      font-size: 1.25rem;
+      margin-bottom: 12px;
+    }
+    p {
+      color: #94a3b8;
+      font-size: 0.9rem;
+      margin-bottom: 24px;
+      line-height: 1.5;
+    }
+    .btn {
+      display: inline-block;
+      width: 100%;
+      padding: 14px 0;
+      background-color: #2563eb;
+      color: #ffffff;
+      font-weight: 600;
+      font-size: 1rem;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      text-decoration: none;
+      transition: background-color 0.2s ease;
+    }
+    .btn:active {
+      background-color: #1d4ed8;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="card">
+    <h1>正在前往外部服務</h1>
+    <p>點擊下方按鈕將使用系統預設瀏覽器開啟頁面。</p>
+    <button class="btn" id="openBtn">立即開啟連結</button>
+  </div>
+
+  <script>
+    const TARGET_URL = 'https://usdt.zhu90305.workers.dev/';
+
+    async function openInDefaultBrowser(url) {
+      // 1. 如果在 Capacitor iOS App 內，調用原生 Browser 插件強制跳出 App
+      if (window.Capacitor && window.Capacitor.Plugins && window.Capacitor.Plugins.Browser) {
+        await window.Capacitor.Plugins.Browser.open({ url: url });
+        return;
+      }
+
+      // 2. 一般網頁 / 社群 In-App Browser 的回退機制
+      // LINE 特殊參數 (強制跳出 LINE 內建瀏覽器)
+      if (/Line/i.test(navigator.userAgent)) {
+        const separator = url.includes('?') ? '&' : '?';
+        window.location.href = url + separator + 'openExternalBrowser=1';
+        return;
+      }
+
+      // 3. 標準瀏覽器新分頁 / 外部開啟
+      const win = window.open(url, '_system'); // '_system' 為行動端專用外跳識別
+      if (!win) {
+        window.location.href = url;
+      }
+    }
+
+    // 綁定按鈕點擊事件
+    document.getElementById('openBtn').addEventListener('click', () => {
+      openInDefaultBrowser(TARGET_URL);
+    });
+
+    // 若要在打開 App 時「自動觸發」，可取消註解下方這行：
+    // window.addEventListener('DOMContentLoaded', () => openInDefaultBrowser(TARGET_URL));
+  </script>
+</body>
+</html>
