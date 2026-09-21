@@ -1,4 +1,4 @@
-name: Build iOS App
+name: Build iOS IPA
 
 on:
   push:
@@ -26,17 +26,25 @@ jobs:
           npx cap add ios || true
           npx cap sync ios
 
-      - name: Build Xcode Project
+      - name: Build Xcode Project for iOS Device
         run: |
           xcodebuild build \
             -workspace ios/App/App.xcworkspace \
             -scheme App \
-            -destination "platform=iOS Simulator,name=iPhone 16" \
+            -destination "generic/platform=iOS" \
             -configuration Release \
+            -derivedDataPath derived_data \
             CODE_SIGNING_ALLOWED=NO
 
-      - name: Upload Build Artifact
+      - name: Package to IPA
+        run: |
+          mkdir -p Payload
+          cp -r derived_data/Build/Products/Release-iphoneos/App.app Payload/
+          zip -r App.ipa Payload
+
+      - name: Upload IPA Artifact
         uses: actions/upload-artifact@v4
         with:
-          name: iOS-App-Build
-          path: ~/Library/Developer/Xcode/DerivedData/**/Build/Products/Release-iphonesimulator/*.app
+          name: iOS-IPA-Package
+          path: App.ipa
+          
