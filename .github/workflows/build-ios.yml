@@ -1,40 +1,7 @@
-name: Build iOS App
-
-on:
-  push:
-    branches: [ main ]
-  workflow_dispatch:
-
-jobs:
-  build:
-    runs-on: macos-14
-
-    steps:
-      - name: Checkout Code
-        uses: actions/checkout@v4
-
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: 20
-
-      - name: Install Dependencies
+      - name: Install Dependencies & Prepare Assets
         run: |
           npm install
+          mkdir -p www
+          cp index.html www/
           npx cap add ios || true
           npx cap sync ios
-
-      - name: Build Xcode Project
-        run: |
-          xcodebuild build \
-            -workspace ios/App/App.xcworkspace \
-            -scheme App \
-            -destination "platform=iOS Simulator,name=iPhone 16" \
-            -configuration Release \
-            CODE_SIGNING_ALLOWED=NO
-
-      - name: Upload Build Artifact
-        uses: actions/upload-artifact@v4
-        with:
-          name: iOS-App-Build
-          path: ~/Library/Developer/Xcode/DerivedData/**/Build/Products/Release-iphonesimulator/*.app
